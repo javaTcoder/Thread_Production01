@@ -1,8 +1,7 @@
-import { Button, Flex, Image, Link, useColorMode, HStack } from "@chakra-ui/react";
+import { Button, Flex, Image, Link, useColorMode, HStack, Text,Avatar, useColorModeValue } from "@chakra-ui/react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { AiFillHome } from "react-icons/ai";
-import { RxAvatar } from "react-icons/rx";
 import { Link as RouterLink } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import useLogout from "../hooks/useLogout";
@@ -46,9 +45,12 @@ const Header = () => {
 
 			{user && (
 				<Flex alignItems={"center"} gap={4}>
-					<Link as={RouterLink} to={`/${user.username}`}>
-						<RxAvatar size={24} />
-					</Link>
+					<Link as={RouterLink} to={`/${user?.username}`}>
+                            <Flex align="center" px={3} py={2} borderRadius={8} _hover={{ bg: useColorModeValue("gray.50", "gray.800") }}>
+                                <Avatar name={user?.name} src={user?.profilePic} size="sm" />
+                                 
+                            </Flex>
+                        </Link>
 					<Link as={RouterLink} to={`/chat`}>
 						<BsFillChatQuoteFill size={20} />
 					</Link>

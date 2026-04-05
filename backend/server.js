@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import { v2 as cloudinary } from "cloudinary";
 import { app, server } from "./socket/socket.js";
 //import job from "./cron/cron.js";
@@ -29,7 +30,7 @@ cloudinary.config({
 });
 
 // Middlewares
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: ["http://localhost:3000", "http://localhost:5173"], credentials: true }));
 app.use(express.json({ limit: "120mb" })); // To parse JSON data in the req.body (allow base64 video payloads up to ~100MB)
 app.use(express.urlencoded({ extended: true, limit: "120mb" })); // To parse form data in the req.body
 app.use(cookieParser());
@@ -38,6 +39,7 @@ app.use(cookieParser());
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/admin", adminRoutes);
 
 // http://localhost:5000 => backend,frontend
 

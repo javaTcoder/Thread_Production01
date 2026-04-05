@@ -63,7 +63,11 @@ const MessageInput = ({ setMessages }) => {
 				return;
 			}
 			console.log(data);
-			setMessages((messages) => [...messages, data]);
+			setMessages((messages) => {
+				// dedupe incoming message in case a socket event already appended it
+				if (messages.some((m) => String(m._id) === String(data._id))) return messages;
+				return [...messages, data];
+			});
 
 			setConversations((prevConvs) => {
 				const updatedConversations = prevConvs.map((conversation) => {

@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { DeleteIcon } from "@chakra-ui/icons";
+import PostOptions from "../components/PostOptions";
 import postsAtom from "../atoms/postsAtom";
 
 const PostPage = () => {
@@ -96,8 +97,10 @@ const PostPage = () => {
 						{formatDistanceToNow(new Date(currentPost.createdAt))} ago
 					</Text>
 
-					{currentUser?._id === author?._id && (
-						<DeleteIcon size={20} cursor={"pointer"} onClick={handleDeletePost} />
+					{currentUser?._id === author?._id ? (
+						<PostOptions post={currentPost} author={author} onDelete={handleDeletePost} />
+					) : (
+						<PostOptions post={currentPost} author={author} />
 					)}
 				</Flex>
 			</Flex>

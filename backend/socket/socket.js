@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: "http://localhost:3000",
+		origin: ["http://localhost:3000", "http://localhost:5173"],
 		methods: ["GET", "POST"],
 	},
 });
@@ -18,13 +18,30 @@ export const getRecipientSocketId = (recipientId) => {
 };
 
 const userSocketMap = {}; // userId: socketId
+export const debugUserSocketMap = () => console.log("userSocketMap", userSocketMap);
+export const getOnlineUsers = () => Object.keys(userSocketMap);
 
 io.on("connection", (socket) => {
 	console.log("user connected", socket.id);
 	const userId = socket.handshake.query.userId;
 
-	if (userId != "undefined") userSocketMap[userId] = socket.id;
+	if (userId != "undefined") {
+		userSocketMap[userId] = socket.id;
+	}
+	console.log("userSocketMap updated:", userSocketMap);
 	io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+	socket.on("joinConversation", ({ conversationId }) => {
+		if (!conversationId) return;
+		socket.join(conversationId);
+		console.log(`socket ${socket.id} joined room ${conversationId}`);
+	});
+
+	socket.on("leaveConversation", ({ conversationId }) => {
+		if (!conversationId) return;
+		socket.leave(conversationId);
+		console.log(`socket ${socket.id} left room ${conversationId}`);
+	});
 
 	socket.on("markMessagesAsSeen", async ({ conversationId, userId }) => {
 		try {

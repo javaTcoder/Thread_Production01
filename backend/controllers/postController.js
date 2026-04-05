@@ -183,7 +183,9 @@ const getFeedPosts = async (req, res) => {
 		const viewerId = userId.toString();
 		const combinedIds = Array.from(new Set([viewerId, ...publicIds]));
 
-		const feedPosts = await Post.find({ postedBy: { $in: combinedIds } }).sort({ createdAt: -1 });
+		const feedPosts = await Post.find({ postedBy: { $in: combinedIds } })
+			.populate("postedBy", "username name profilePic")
+			.sort({ createdAt: -1 });
 
 		res.status(200).json(feedPosts);
 	} catch (err) {
@@ -208,12 +210,59 @@ const getUserPosts = async (req, res) => {
 			}
 		}
 
-		const posts = await Post.find({ postedBy: user._id }).sort({ createdAt: -1 });
+		// populate postedBy with basic user info so the client doesn't need an extra fetch
+	const posts = await Post.find({ postedBy: user._id })
+		.sort({ createdAt: -1 })
+		.populate("postedBy", "username name profilePic");
 
-		res.status(200).json(posts);
+	res.status(200).json(posts);
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+};
+
+const getUserReplies = async (req, res) => {
+	const { username } = req.params;
+	try {
+		const user = await User.findOne({ username });
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		// If the profile is private, only allow the owner to view their replies
+		if (user.isPrivate) {
+			const viewerId = req.user?._id?.toString();
+			const isOwner = viewerId && user._id.toString() === viewerId;
+			if (!isOwner) {
+				return res.status(403).json({ error: "This user's replies are private" });
+			}
+		}
+
+		// Find posts where the user has replied
+		const postsWithReplies = await Post.find({ "replies.userId": user._id })
+			.sort({ createdAt: -1 })
+			.populate("postedBy", "username name profilePic");
+
+		// Extract replies made by the user
+		const userReplies = [];
+		postsWithReplies.forEach(post => {
+			post.replies.forEach(reply => {
+				if (reply.userId.toString() === user._id.toString()) {
+					userReplies.push({
+						...reply.toObject(),
+						postId: post._id,
+						postText: post.text,
+						postImg: post.img,
+						postPostedBy: post.postedBy
+					});
+				}
+			});
+		});
+
+		res.status(200).json(userReplies);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 };
 
-export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts };
+export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts, getUserReplies };

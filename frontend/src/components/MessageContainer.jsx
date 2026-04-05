@@ -19,17 +19,13 @@ const MessageContainer = () => {
 	const messageEndRef = useRef(null);
 
 	useEffect(() => {
+		// join conversation room when a conversation is selected (non-mock)
+		if (selectedConversation._id && !selectedConversation.mock) {
+			socket.emit("joinConversation", { conversationId: selectedConversation._id });
+		}
+
 		socket.on("newMessage", (message) => {
-			if (selectedConversation._id === message.conversationId) {
-				setMessages((prev) => [...prev, message]);
-			}
-
-			// make a sound if the window is not focused
-			if (!document.hasFocus()) {
-				const sound = new Audio(messageSound);
-				sound.play();
-			}
-
+			// always update conversations lastMessage (list view)
 			setConversations((prev) => {
 				const updatedConversations = prev.map((conversation) => {
 					if (conversation._id === message.conversationId) {
@@ -45,6 +41,24 @@ const MessageContainer = () => {
 				});
 				return updatedConversations;
 			});
+
+			// add to messages if currently viewing the conversation (or if mock conversation matches id)
+			if (selectedConversation._id === message.conversationId) {
+				setMessages((prev) => {
+					// dedupe incoming messages by _id (avoid duplicates when POST response + socket emit both append)
+					if (prev.some((m) => String(m._id) === String(message._id))) {
+						console.log("Duplicate message received, skipping:", message._id);
+						return prev;
+					}
+					return [...prev, message];
+				});
+			}
+
+			// make a sound if the window is not focused
+			if (!document.hasFocus()) {
+				const sound = new Audio(messageSound);
+				sound.play();
+			}
 		});
 
 		return () => socket.off("newMessage");

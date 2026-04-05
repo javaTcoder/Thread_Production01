@@ -104,6 +104,7 @@ const loginUser = async (req, res) => {
 			username: user.username,
 			bio: user.bio,
 			profilePic: user.profilePic,
+			isAdmin: user.isAdmin,
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -135,6 +136,7 @@ const verifyEmail = async (req, res) => {
 			username: user.username,
 			bio: user.bio,
 			profilePic: user.profilePic,
+			isAdmin: user.isAdmin,
 		}});
 	} catch (err) {
 		res.status(500).json({ error: err.message });

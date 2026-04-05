@@ -79,9 +79,7 @@ const ChatPage = () => {
 			}
 
 			const conversationAlreadyExists = conversations.find(
-				(conversation) => conversation.participants[0]._id === searchedUser._id
-			);
-
+					(conversation) => conversation.participants?.some((p) => p._id === searchedUser._id)				);
 			if (conversationAlreadyExists) {
 				setSelectedConversation({
 					_id: conversationAlreadyExists._id,
@@ -159,10 +157,10 @@ const ChatPage = () => {
 						))}
 
 					{!loadingConversations &&
-						conversations.map((conversation) => (
+						conversations.filter((conversation) => conversation.participants && conversation.participants.length > 0).map((conversation) => (
 							<Conversation
 								key={conversation._id}
-								isOnline={onlineUsers.includes(conversation.participants[0]._id)}
+								isOnline={onlineUsers.includes(conversation.participants?.[0]?._id)}
 								conversation={conversation}
 							/>
 						))}

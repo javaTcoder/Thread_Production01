@@ -16,9 +16,9 @@ import { BsCheck2All, BsFillImageFill } from "react-icons/bs";
 import { selectedConversationAtom } from "../atoms/messagesAtom";
 
 const Conversation = ({ conversation, isOnline }) => {
-	const user = conversation.participants[0];
+	const user = conversation.participants?.[0] || {};
 	const currentUser = useRecoilValue(userAtom);
-	const lastMessage = conversation.lastMessage;
+	const lastMessage = conversation.lastMessage || { text: "", sender: "" };
 	const [selectedConversation, setSelectedConversation] = useRecoilState(selectedConversationAtom);
 	const colorMode = useColorMode();
 

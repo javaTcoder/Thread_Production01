@@ -56,8 +56,28 @@ async function sendMessage(req, res) {
 		]);
 
 		const recipientSocketId = getRecipientSocketId(recipientId);
+		console.log("Attempting to send message", { recipientId, recipientSocketId });
+		const messageToEmit = JSON.parse(JSON.stringify(newMessage));
+		// If recipient socket exists, only send direct emit if recipient is NOT already in the room (avoid duplicate delivery)
 		if (recipientSocketId) {
-			io.to(recipientSocketId).emit("newMessage", newMessage);
+			const recipientSocket = io.sockets.sockets.get(recipientSocketId);
+			const inRoom = recipientSocket && recipientSocket.rooms && recipientSocket.rooms.has(conversation._id.toString());
+			if (!inRoom) {
+				io.to(recipientSocketId).emit("newMessage", messageToEmit);
+				console.log("Emitted newMessage to socket:", recipientSocketId);
+			} else {
+				console.log("Recipient socket already in room, skipping direct emit for:", recipientSocketId);
+			}
+		} else {
+			console.log("Recipient socket not found for recipientId:", recipientId);
+		}
+
+		// also emit to conversation room so clients who joined the room receive it even if their socket id changed
+		try {
+			io.to(conversation._id.toString()).emit("newMessage", messageToEmit);
+			console.log("Emitted newMessage to room:", conversation._id.toString());
+		} catch (err) {
+			console.log("Error emitting to room:", err && err.message ? err.message : err);
 		}
 
 		res.status(201).json(newMessage);

@@ -10,7 +10,7 @@ import userAtom from "../atoms/userAtom";
 import { Link as RouterLink } from "react-router-dom";
 import useFollowUnfollow from "../hooks/useFollowUnfollow";
 
-const UserHeader = ({ user }) => {
+const UserHeader = ({ user, activeTab, setActiveTab }) => {
 	const toast = useToast();
 	const currentUser = useRecoilValue(userAtom); // logged in user
 	const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
@@ -106,19 +106,31 @@ const UserHeader = ({ user }) => {
 			</Flex>
 
 			<Flex w={"full"}>
-				<Flex flex={1} borderBottom={"1.5px solid white"} justifyContent={"center"} pb='3' cursor={"pointer"}>
-					<Text fontWeight={"bold"}> Threads</Text>
+				<Flex flex={1} borderBottom={activeTab === "threads" ? "1.5px solid white" : "1px solid gray"} justifyContent={"center"} pb='3' cursor={"pointer"} onClick={() => setActiveTab("threads")}>
+					<Text fontWeight={"bold"} color={activeTab === "threads" ? "white" : "gray.light"}> Threads</Text>
 				</Flex>
 				<Flex
 					flex={1}
-					borderBottom={"1px solid gray"}
+					borderBottom={activeTab === "replies" ? "1.5px solid white" : "1px solid gray"}
+					justifyContent={"center"}
+					pb='3'
+					cursor={"pointer"}
+					onClick={() => setActiveTab("replies")}
+				>
+					<Text fontWeight={"bold"} color={activeTab === "replies" ? "white" : "gray.light"}> Replies</Text>
+				</Flex>
+				<Flex
+					flex={1}
+					borderBottom={activeTab === "saved" ? "1.5px solid white" : "1px solid gray"}
 					justifyContent={"center"}
 					color={"gray.light"}
 					pb='3'
 					cursor={"pointer"}
+					onClick={() => setActiveTab("saved")}
 				>
-					<Text fontWeight={"bold"}> Replies</Text>
+					<Text fontWeight={"bold"} color={activeTab === "saved" ? "white" : "gray.light"}> Saved</Text>
 				</Flex>
+				
 			</Flex>
 		</VStack>
 	);

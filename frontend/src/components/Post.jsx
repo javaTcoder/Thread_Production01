@@ -1,12 +1,12 @@
 import { Avatar } from "@chakra-ui/avatar";
 import { Image } from "@chakra-ui/image";
 import { Box, Flex, Text } from "@chakra-ui/layout";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Actions from "./Actions";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { formatDistanceToNow } from "date-fns";
-import { DeleteIcon } from "@chakra-ui/icons";
+import PostOptions from "./PostOptions";
 import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import postsAtom from "../atoms/postsAtom";
@@ -19,9 +19,19 @@ const Post = ({ post, postedBy }) => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		// postedBy can be an ID string/ObjectId or a populated user object
+		if (!postedBy) return;
+
+		// if caller already passed a user object (has username property) we can skip the network request
+		if (typeof postedBy === "object" && postedBy.username) {
+			setUser(postedBy);
+			return;
+		}
+
 		const getUser = async () => {
 			try {
-				const res = await fetch("/api/users/profile/" + postedBy);
+				const id = typeof postedBy === "object" ? postedBy._id || postedBy : postedBy;
+				const res = await fetch("/api/users/profile/" + id);
 				const data = await res.json();
 				if (data.error) {
 					showToast("Error", data.error, "error");
@@ -59,15 +69,20 @@ const Post = ({ post, postedBy }) => {
 
 	if (!user) return null;
 	return (
-		<Link to={`/${user.username}/post/${post._id}`}>
-			<Flex gap={3} mb={4} py={5}>
+		<Flex
+			gap={3}
+			mb={4}
+			py={5}
+			cursor="pointer"
+			onClick={() => navigate(`/${user.username}/post/${post._id}`)}
+		>
 				<Flex flexDirection={"column"} alignItems={"center"}>
 					<Avatar
 						size='md'
 						name={user.name}
 						src={user?.profilePic}
 						onClick={(e) => {
-							e.preventDefault();
+							e.stopPropagation();
 							navigate(`/${user.username}`);
 						}}
 					/>
@@ -118,7 +133,7 @@ const Post = ({ post, postedBy }) => {
 								fontSize={"sm"}
 								fontWeight={"bold"}
 								onClick={(e) => {
-									e.preventDefault();
+									e.stopPropagation();
 									navigate(`/${user.username}`);
 								}}
 							>
@@ -131,7 +146,11 @@ const Post = ({ post, postedBy }) => {
 								{formatDistanceToNow(new Date(post.createdAt))} ago
 							</Text>
 
-							{currentUser?._id === user._id && <DeleteIcon size={20} onClick={handleDeletePost} />}
+							{currentUser?._id === user._id ? (
+								<PostOptions post={post} author={user} onDelete={handleDeletePost} />
+							) : (
+								<PostOptions post={post} author={user} />
+							)}
 						</Flex>
 					</Flex>
 
@@ -151,7 +170,7 @@ const Post = ({ post, postedBy }) => {
 					</Flex>
 				</Flex>
 			</Flex>
-		</Link>
+
 	);
 };
 
