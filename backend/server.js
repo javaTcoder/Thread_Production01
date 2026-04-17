@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./db/connectDB.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
@@ -11,6 +13,9 @@ import { app, server } from "./socket/socket.js";
 //import job from "./cron/cron.js";
 import job from "./cron/cron.js";
 import cors from "cors";
+
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 // Load environment variables
@@ -43,14 +48,14 @@ app.use("/api/admin", adminRoutes);
 
 // http://localhost:5000 => backend,frontend
 
-// if (process.env.NODE_ENV === "production") {
-// 	app.use(express.static(path.join(__dirname, "/frontend/dist")));
+ if (process.env.NODE_ENV === "production") {
+ 	app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-// 	// react app
-// 	app.get("*", (req, res) => {
-// 		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-// 	});
-// }
+ 	// react app
+ 	app.get("*", (req, res) => {
+ 		res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
+ 	});
+ }
 
 server.listen(PORT, () => console.log(`Server started at http://localhost:${PORT}`));
 
