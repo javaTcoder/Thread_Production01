@@ -21,7 +21,7 @@ import { MdOutlineSettings, MdAdminPanelSettings } from "react-icons/md";
 import { FaSearch, FaShoppingBag } from "react-icons/fa";
 import { AddIcon } from "@chakra-ui/icons";
 import { useState, useEffect, useRef } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import userAtom from "../atoms/userAtom";
 import createPostAtom from "../atoms/createPostAtom";
@@ -34,11 +34,15 @@ export default function LeftSidebar() {
     const [loading, setLoading] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const timer = useRef();
     const mobileBg = useColorModeValue("gray.50", "gray.800");
     const mobileColor = useColorModeValue("gray.800", "gray.100");
     const mobileBorder = useColorModeValue("gray.200", "gray.700");
     const [hover, setHover] = useState(false);
+
+    // Hide profile icon on auth pages
+    const isAuthPage = location.pathname === "/auth";
 
     useEffect(() => {
         if (!query) {
@@ -87,12 +91,14 @@ export default function LeftSidebar() {
             >
                 <VStack spacing={6} align="center" height="100%" justifyContent="space-between">
                     <VStack spacing={6} align="stretch" mt={4} width="100%">
-                        <Link as={RouterLink} to={`/${user?.username}`}>
-                            <Flex align="center" px={3} py={2} borderRadius={8} _hover={{ bg: useColorModeValue("gray.50", "gray.800") }}>
-                                <Avatar name={user?.name} src={user?.profilePic} size="sm" />
-                                {hover && <Text ml={4} fontWeight={600}>Profile</Text>}
-                            </Flex>
-                        </Link>
+                        {!isAuthPage && (
+                            <Link as={RouterLink} to={`/${user?.username}`}>
+                                <Flex align="center" px={3} py={2} borderRadius={8} _hover={{ bg: useColorModeValue("gray.50", "gray.800") }}>
+                                    <Avatar name={user?.name} src={user?.profilePic} size="sm" />
+                                    {hover && <Text ml={4} fontWeight={600}>Profile</Text>}
+                                </Flex>
+                            </Link>
+                        )}
                         {/* <Link as={RouterLink} to={`/`} _hover={{ textDecoration: "none" }}>
                             <Flex align="center" px={3} py={2} borderRadius={8} _hover={{ bg: useColorModeValue("gray.50", "gray.800") }}>
                                 <Box w={10} h={10} borderRadius="full" display="flex" alignItems="center" justifyContent="center" bg={useColorModeValue("gray.50", "gray.800")}>
@@ -200,6 +206,10 @@ export default function LeftSidebar() {
                         ml={2}
                         color={mobileColor}
                     />
+
+                    <Link as={RouterLink} to={`/reels`}>
+                        <IconButton aria-label="Reels" icon={<FaPlay />} variant="ghost" size="sm" _hover={{ bg: "transparent" }} ml={2} color={mobileColor} />
+                    </Link>
 
                     <IconButton
                         aria-label="Create post"

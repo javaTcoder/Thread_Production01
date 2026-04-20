@@ -93,9 +93,10 @@ export const SettingsPage = () => {
 			],
 		}] : []),
 		{
-			title: "How you use Instagram",
+			title: "How you use Thread",
 			items: [
 				{ label: "Edit Profile", icon: AiOutlineUser, onClick: () => navigate("/update") },
+				{ label: "User Interface", icon: AiOutlineUser, onClick: () => navigate("/User Interface") },
 				{ label: "Notifications", icon: AiOutlineBell, onClick: placeholder("Notifications") },
 			],
 		},

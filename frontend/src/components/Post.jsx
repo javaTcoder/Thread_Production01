@@ -3,7 +3,7 @@ import { Image } from "@chakra-ui/image";
 import { Box, Flex, Text } from "@chakra-ui/layout";
 import { useNavigate } from "react-router-dom";
 import Actions from "./Actions";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { formatDistanceToNow } from "date-fns";
 import PostOptions from "./PostOptions";
@@ -17,6 +17,8 @@ const Post = ({ post, postedBy }) => {
 	const currentUser = useRecoilValue(userAtom);
 	const [posts, setPosts] = useRecoilState(postsAtom);
 	const navigate = useNavigate();
+	const videoRef = useRef(null);
+	const [videoElement, setVideoElement] = useState(null);
 
 	useEffect(() => {
 		// postedBy can be an ID string/ObjectId or a populated user object
@@ -46,6 +48,64 @@ const Post = ({ post, postedBy }) => {
 
 		getUser();
 	}, [postedBy, showToast]);
+
+	// Video autoplay/pause based on visibility
+	useEffect(() => {
+		if (!videoElement) return;
+
+		const video = videoElement;
+		let observer;
+
+		const setupObserver = () => {
+			observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						const isVisible = entry.isIntersecting && entry.intersectionRatio >= 0.3;
+
+						if (isVisible) {
+							if (video.paused) {
+								const playPromise = video.play();
+								if (playPromise !== undefined) {
+									playPromise.catch(() => {
+										// Autoplay blocked, user interaction required
+									});
+								}
+							}
+						} else {
+							if (!video.paused) {
+								video.pause();
+								video.currentTime = 0;
+							}
+						}
+					});
+				},
+				{
+					threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+					rootMargin: '50px',
+				}
+			);
+
+			observer.observe(video);
+		};
+
+		setupObserver();
+
+		const handleVisibilityChange = () => {
+			if (document.hidden && !video.paused) {
+				video.pause();
+				video.currentTime = 0;
+			}
+		};
+
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		return () => {
+			if (observer) {
+				observer.disconnect();
+			}
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	}, [post._id, videoElement]); // Re-run when post changes
 
 	const handleDeletePost = async (e) => {
 		try {
@@ -158,9 +218,21 @@ const Post = ({ post, postedBy }) => {
 					{post.img && (
 						<Box borderRadius={6} overflow={"hidden"} border={"1px solid"} borderColor={"gray.light"}>
 							{post.mediaType === 'video' || (post.img && /\.(mp4|mov|webm)$/i.test(post.img)) ? (
-								<video src={post.img} controls style={{ width: '100%', height: 'auto', maxHeight: '60vh', objectFit: 'contain', borderRadius: 6 }} />
+								<video 
+									ref={(el) => {
+										videoRef.current = el;
+										setVideoElement(el);
+									}}
+									src={post.img} 
+									controls 
+									playsInline
+									autoPlay
+									style={{ width: '100%', height: 'auto', maxHeight: '60vh', objectFit: 'contain', borderRadius: 6 }}
+									onClick={(e) => e.stopPropagation()}
+									muted // Start muted to allow autoplay
+								/>
 							) : (
-								<Image src={post.img} w={"full"} />
+								<Image src={post.img} w={"full"} onClick={(e) => e.stopPropagation()} />
 							)}
 						</Box>
 					)}

@@ -2,7 +2,7 @@ import { Avatar } from "@chakra-ui/avatar";
 import { Box, Flex, Link, Text, VStack } from "@chakra-ui/layout";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/menu";
 import { Portal } from "@chakra-ui/portal";
-import { Button, useToast } from "@chakra-ui/react";
+import { Button, useToast, useColorModeValue } from "@chakra-ui/react";
 import { BsInstagram } from "react-icons/bs";
 import { CgMoreO } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
@@ -14,6 +14,8 @@ const UserHeader = ({ user, activeTab, setActiveTab }) => {
 	const toast = useToast();
 	const currentUser = useRecoilValue(userAtom); // logged in user
 	const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
+	const activeColor = useColorModeValue("black", "white");
+	const inactiveColor = "gray.light";
 
 	const copyURL = () => {
 		const currentURL = window.location.href;
@@ -107,7 +109,7 @@ const UserHeader = ({ user, activeTab, setActiveTab }) => {
 
 			<Flex w={"full"}>
 				<Flex flex={1} borderBottom={activeTab === "threads" ? "1.5px solid white" : "1px solid gray"} justifyContent={"center"} pb='3' cursor={"pointer"} onClick={() => setActiveTab("threads")}>
-					<Text fontWeight={"bold"} color={activeTab === "threads" ? "white" : "gray.light"}> Threads</Text>
+					<Text fontWeight={"bold"} color={activeTab === "threads" ? activeColor : inactiveColor}> Threads</Text>
 				</Flex>
 				<Flex
 					flex={1}
@@ -117,7 +119,7 @@ const UserHeader = ({ user, activeTab, setActiveTab }) => {
 					cursor={"pointer"}
 					onClick={() => setActiveTab("replies")}
 				>
-					<Text fontWeight={"bold"} color={activeTab === "replies" ? "white" : "gray.light"}> Replies</Text>
+					<Text fontWeight={"bold"} color={activeTab === "replies" ? activeColor : inactiveColor}> Replies</Text>
 				</Flex>
 				<Flex
 					flex={1}
@@ -128,7 +130,7 @@ const UserHeader = ({ user, activeTab, setActiveTab }) => {
 					cursor={"pointer"}
 					onClick={() => setActiveTab("saved")}
 				>
-					<Text fontWeight={"bold"} color={activeTab === "saved" ? "white" : "gray.light"}> Saved</Text>
+					<Text fontWeight={"bold"} color={activeTab === "saved" ? activeColor : inactiveColor}> Saved</Text>
 				</Flex>
 				
 			</Flex>

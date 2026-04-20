@@ -154,7 +154,7 @@ const replyToPost = async (req, res) => {
 			return res.status(404).json({ error: "Post not found" });
 		}
 
-		const reply = { userId, text, userProfilePic, username };
+		const reply = { userId, text, userProfilePic, username, createdAt: new Date() };
 
 		post.replies.push(reply);
 		await post.save();
@@ -265,4 +265,32 @@ const getUserReplies = async (req, res) => {
 	}
 };
 
-export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts, getUserReplies };
+const deleteReply = async (req, res) => {
+	try {
+		const { id: postId, replyId } = req.params;
+
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ error: "Post not found" });
+		}
+
+		const reply = post.replies.id(replyId);
+		if (!reply) {
+			return res.status(404).json({ error: "Reply not found" });
+		}
+
+		// Check if the current user is the reply owner
+		if (reply.userId.toString() !== req.user._id.toString()) {
+			return res.status(401).json({ error: "Unauthorized to delete this reply" });
+		}
+
+		post.replies.id(replyId).deleteOne();
+		await post.save();
+
+		res.status(200).json({ message: "Reply deleted successfully" });
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
+export { createPost, getPost, deletePost, likeUnlikePost, replyToPost, getFeedPosts, getUserPosts, getUserReplies, deleteReply };
